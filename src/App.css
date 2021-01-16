@@ -1,40 +1,7 @@
-.App-header{
+.App{
+    background-color: #141414;
+    color:#fff;
     text-align: center;
-    color: white;
-    background-color: rgb(22, 24, 158);
-    padding: 20px;
-}
-
-.user-details{
-    background-color: rgb(182, 181, 179);
-    border-radius: 10px;
-    border: 2px solid black;
-    box-shadow: darkslategrey;
-    margin:20px;
-    display: flex;
-}
-
-.user-details-left {
-    flex: 1;
-    margin:5px;
-}
-
-.user-details-center{
-    flex:1;
-    margin:5px;
-}
-
-.user-details-right{
-    flex:1;
-    margin:5px;
-}
-
-span{
-    font-weight: 400;
-}
-
-@media(max-width:600px){
-.user-details{
-    display: block;
-}
+    z-index: 3;
+    height:100%;
 }

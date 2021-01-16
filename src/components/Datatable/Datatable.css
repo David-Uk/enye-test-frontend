@@ -1,0 +1,26 @@
+.container{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.user-details{
+    background-color: rgb(170, 170, 177);
+    text-align: left;
+    color:rgb(26, 25, 25);
+    box-shadow: darkslategrey;
+    margin:20px 20px;
+    list-style-type: none;
+    padding: 10px;
+    width: 300px;
+    transition: all .3s;
+    font-size: 1em;
+    z-index: 5;
+}
+
+@media(max-width:600px){
+    .user-details{
+        width:100%;
+        text-align: left;
+    }
+}

@@ -1,62 +1,93 @@
-import React, { useState, useEffect } from "react";
-import axios from 'axios';
+import React, { useState, useEffect } from 'react'
+import Datatable from './components/Datatable/Datatable'
+import SearchFilter from './components/SearchFilter/SearchFilter'
+import SearchInput from './components/SearchInput/SearchInput';
+import Pagination from './components/Pagination/Pagination';
 import './App.css';
 
-const url = "https://api.enye.tech/v1/challenge/records";
+require('es6-promise').polyfill();
+require('isomorphic-fetch');
 
+export default function App() {
+  const [profileData, setProfileData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [query, setQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [profilesPerPage] = useState(20);
+  const [activeLink, setActiveLink] = useState(currentPage);
+  const [filteredProfiles, setFilteredProfiles] = useState([]);
 
-
-function App() {
-  const [userData, setUserData] = useState({});
 
   useEffect(() => {
-    getUserData();
-  }, []);
+    const getUserProfiles = async () => {
+      setLoading(true)
+      const res = await fetch(`https://api.enye.tech/v1/challenge/records`);
+      const jsonResponse = await res.json();
+      setProfileData(jsonResponse.records.profiles);
+      setLoading(false);
+    }
 
-  const getUserData = async () => {
-    const response = await axios.get(url);
-    setUserData(response.data);
+    getUserProfiles()
+  }, [])
+
+  const searchInputHandler = (e) => {
+    setFilteredProfiles([])
+    setQuery(e.target.value);
+    setCurrentPage(1)
+    setActiveLink(1)
+  }
+
+  const searchedProfiles = profileData.filter(profile => {
+    const fullName = profile.FirstName + profile.LastName;
+    return fullName.toLowerCase().includes(query.toLowerCase())
+  })
+
+
+  // Get current profiles
+  const lastProfileIndex = currentPage * profilesPerPage;
+  const firstProfileIndex = lastProfileIndex - profilesPerPage;
+
+  const searchedProfileCurrent = searchedProfiles.slice(firstProfileIndex, lastProfileIndex);
+  const filteredProfileCurrent = filteredProfiles.slice(firstProfileIndex, lastProfileIndex);
+
+  const currentProfile = filteredProfileCurrent.length > 1 ? filteredProfileCurrent : searchedProfileCurrent;
+
+  // Change page
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber)
+    setActiveLink(pageNumber)
   };
 
-  let profileData;
-  if (userData.records) profileData = userData.records.profiles
-  console.log(profileData)
-  return (
-    <div>
-      <header className="App-header">
-        <h2>Patient's Data</h2>
-        <input type="search" name="search" placeholder='Search' id=""/>
-      </header>
-      <div>
-        {profileData.map(data => (
-          <div className='user-details' key={data.UserName}>
-            <div className='user-details-left'>
-              <h6>First Name: <span>{data.FirstName}</span></h6>
-              <h6>Last Name: <span>{data.LastName}</span></h6>
-              <h6>Gender: <span>{data.Gender}</span></h6>
-              <h6>Latitude: <span>{data.Latitude}</span></h6>
-              <h6>Longitude: <span>{data.Longitude}</span></h6>
-            </div>
-            <div className='user-details-center'>
-              <h6>Creditcard No: <span>{data.CreditCardNumber}</span></h6>
-              <h6>Creditcard Type: <span>{data.CreditCardType}</span></h6>
-              <h6>Email: <span>{data.Email}</span></h6>
-              <h6>DomainName: <span>{data.DomainName}</span></h6>
-              <h6>Phone No: <span>{data.PhoneNumber}</span></h6>
-            </div>
-            <div className='user-details-right'>
-              <h6>MAC: <span>{data.MacAddress}</span></h6>
-              <h6>URL: <span>{data.URL}</span></h6>
-              <h6>Username: <span>{data.UserName}</span></h6>
-              <h6>Last Login: <span>{data.LastLogin}</span></h6>
-              <h6>Payment Method: <span>{data.PaymentMethod}</span></h6>
-            </div>
+  const handleSelectFilteredProfiles = (profiles) => {
+    setCurrentPage(1)
+    setActiveLink(1)
+    setFilteredProfiles(profiles)
+  }
 
-          </div>
-        ))}
-      </div>
+
+  /* console.log(profileData) */
+  return (
+    <div className='App'>
+      <h4>Enye Frontend Test</h4>
+      <div>
+        <SearchInput handleChange={searchInputHandler} />
+          <SearchFilter
+            label={'Gender'}
+            options={['Male', 'Female', 'Prefer to skip']}
+            profiles={profileData}
+          handleSelect={handleSelectFilteredProfiles} />
+          <SearchFilter
+            label={'PaymentMethod'}
+            options={['money order', 'cc', 'check', 'paypal']}
+            profiles={profileData}
+          handleSelect={handleSelectFilteredProfiles} />
+       </div>
+      <div>
+        <Datatable
+          profileData={currentProfile} loading={loading}></Datatable>
+        <Pagination profilesPerPage={profilesPerPage} totalProfiles={filteredProfiles.length || searchedProfiles.length} paginate={paginate} activeLink={activeLink} />
+       </div>
     </div>
   )
-}
 
-export default App
+}
